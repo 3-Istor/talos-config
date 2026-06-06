@@ -35,7 +35,7 @@ vault login -method=oidc
 
 Verify your token is active by reading the cluster secrets (Note: You only need read access):
 ```bash
-vault kv get secret/talos/demo-cluster
+vault kv get -format=json kvv2/talos/demo-cluster | jq -r '.data.data.machine_secrets' > secrets.yaml
 ```
 
 ## 📝 Step 2: Modifying the Configuration
@@ -77,23 +77,3 @@ terraform apply
 Terraform will detect that the remote `demo-patch.yaml` file has changed, re-assemble the machine configuration, and apply it.
 
 *(Note: Updating user-data on an existing OpenStack VM usually requires replacing the VM. If you are live-updating a running Talos node without recreating the VM, you will use `talosctl apply-config` instead, but Terraform remains the source of truth for initial provisioning).*
-
-## 🛑 Administrative Tasks (Admins Only)
-
-### Generating Base Secrets
-If you are bootstrapping a completely new cluster, you need to generate the base secrets and push them to Vault. **Do not commit these to Git.**
-
-```bash
-# 1. Generate the secrets bundle in memory/local file
-talosctl gen secrets -o secrets.yaml
-
-# 2. Extract the data and format it for Vault (JSON)
-# 3. Write to Vault
-vault kv put secret/talos/new-cluster \
-    cluster_name="new-cluster" \
-    cluster_endpoint="https://<VIP_OR_FLOATING_IP>:6443" \
-    machine_secrets=@secrets.yaml
-
-# 4. Delete the local secrets file immediately!
-rm secrets.yaml
-```
