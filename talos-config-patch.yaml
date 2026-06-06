@@ -1,0 +1,19 @@
+machine:
+  network:
+    nameservers:
+      - 1.1.1.1
+      - 8.8.8.8
+  time:
+    servers:
+      - time.cloudflare.com
+  nodeLabels:
+    team: 3-istor
+    environment: demo
+  
+# Disable the CNI and kube-proxy, as we will be using Cilium's CNI
+cluster:
+  network:
+    cni:
+      name: none
+  proxy:
+    disabled: true
